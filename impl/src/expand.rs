@@ -109,7 +109,7 @@ fn impl_struct(input: Struct) -> TokenStream {
         let only_field = &input.fields[0].member;
         display_implied_bounds.insert((0, Trait::Display));
         Some(quote! {
-            std::fmt::Display::fmt(&self.#only_field, __formatter)
+            core::fmt::Display::fmt(&self.#only_field, __formatter)
         })
     } else if let Some(display) = &input.attrs.display {
         display_implied_bounds = display.implied_bounds.clone();
@@ -151,9 +151,9 @@ fn impl_struct(input: Struct) -> TokenStream {
         let display_where_clause = display_inferred_bounds.augment_where_clause(input.generics);
         quote! {
             #[allow(unused_qualifications)]
-            impl #impl_generics std::fmt::Display for #ty #ty_generics #display_where_clause {
+            impl #impl_generics core::fmt::Display for #ty #ty_generics #display_where_clause {
                 #[allow(clippy::used_underscore_binding)]
-                fn fmt(&self, __formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                fn fmt(&self, __formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     #body
                 }
             }
@@ -166,7 +166,7 @@ fn impl_struct(input: Struct) -> TokenStream {
         let body = from_initializer(from_field, backtrace_field);
         quote! {
             #[allow(unused_qualifications)]
-            impl #impl_generics std::convert::From<#from> for #ty #ty_generics #where_clause {
+            impl #impl_generics core::convert::From<#from> for #ty #ty_generics #where_clause {
                 #[allow(deprecated)]
                 fn from(source: #from) -> Self {
                     #ty #body
@@ -385,7 +385,7 @@ fn impl_enum(input: Enum) -> TokenStream {
                         Member::Unnamed(index) => format_ident!("_{}", index),
                     };
                     display_implied_bounds.insert((0, Trait::Display));
-                    quote!(std::fmt::Display::fmt(#only_field, __formatter))
+                    quote!(core::fmt::Display::fmt(#only_field, __formatter))
                 }
             };
             for (field, bound) in display_implied_bounds {
@@ -404,8 +404,8 @@ fn impl_enum(input: Enum) -> TokenStream {
         let display_where_clause = display_inferred_bounds.augment_where_clause(input.generics);
         Some(quote! {
             #[allow(unused_qualifications)]
-            impl #impl_generics std::fmt::Display for #ty #ty_generics #display_where_clause {
-                fn fmt(&self, __formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            impl #impl_generics core::fmt::Display for #ty #ty_generics #display_where_clause {
+                fn fmt(&self, __formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                     #use_as_display
                     #[allow(unused_variables, deprecated, clippy::used_underscore_binding)]
                     match #void_deref self {
@@ -426,7 +426,7 @@ fn impl_enum(input: Enum) -> TokenStream {
         let body = from_initializer(from_field, backtrace_field);
         Some(quote! {
             #[allow(unused_qualifications)]
-            impl #impl_generics std::convert::From<#from> for #ty #ty_generics #where_clause {
+            impl #impl_generics core::convert::From<#from> for #ty #ty_generics #where_clause {
                 #[allow(deprecated)]
                 fn from(source: #from) -> Self {
                     #ty::#variant #body
@@ -479,7 +479,7 @@ fn fields_pat(fields: &[Field]) -> TokenStream {
 fn from_initializer(from_field: &Field, backtrace_field: Option<&Field>) -> TokenStream {
     let from_member = &from_field.member;
     let some_source = if type_is_option(from_field.ty) {
-        quote!(std::option::Option::Some(source))
+        quote!(core::option::Option::Some(source))
     } else {
         quote!(source)
     };
@@ -487,11 +487,11 @@ fn from_initializer(from_field: &Field, backtrace_field: Option<&Field>) -> Toke
         let backtrace_member = &backtrace_field.member;
         if type_is_option(backtrace_field.ty) {
             quote! {
-                #backtrace_member: std::option::Option::Some(std::backtrace::Backtrace::capture()),
+                #backtrace_member: core::option::Option::Some(std::backtrace::Backtrace::capture()),
             }
         } else {
             quote! {
-                #backtrace_member: std::convert::From::from(std::backtrace::Backtrace::capture()),
+                #backtrace_member: core::convert::From::from(std::backtrace::Backtrace::capture()),
             }
         }
     });
