@@ -1,3 +1,4 @@
+#![cfg(feature = "std")]
 #![cfg_attr(thiserror_nightly_testing, feature(backtrace))]
 
 use thiserror_no_std::Error;
