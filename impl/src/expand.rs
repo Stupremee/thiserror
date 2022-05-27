@@ -18,6 +18,7 @@ pub fn derive(node: &DeriveInput) -> Result<TokenStream> {
     })
 }
 
+#[allow(unused)]
 fn impl_struct(input: Struct) -> TokenStream {
     let ty = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -53,7 +54,7 @@ fn impl_struct(input: Struct) -> TokenStream {
     let source_method = source_body.map(|body| {
         quote! {
             fn source(&self) -> std::option::Option<&(dyn std::error::Error + 'static)> {
-                use thiserror::private::AsDynError;
+                use thiserror_no_std::private::AsDynError;
                 #body
             }
         }
@@ -84,7 +85,7 @@ fn impl_struct(input: Struct) -> TokenStream {
                 }
             };
             quote! {
-                use thiserror::private::AsDynError;
+                use thiserror_no_std::private::AsDynError;
                 #combinator
             }
         } else if type_is_option(backtrace_field.ty) {
@@ -113,10 +114,19 @@ fn impl_struct(input: Struct) -> TokenStream {
     } else if let Some(display) = &input.attrs.display {
         display_implied_bounds = display.implied_bounds.clone();
         let use_as_display = if display.has_bonus_display {
-            Some(quote! {
+            #[cfg(feature = "std")]
+            let t = quote! {
                 #[allow(unused_imports)]
-                use thiserror::private::{DisplayAsDisplay, PathAsDisplay};
-            })
+                use thiserror_no_std::private::{DisplayAsDisplay, PathAsDisplay};
+            };
+
+            #[cfg(not(feature = "std"))]
+            let t = quote! {
+                #[allow(unused_imports)]
+                use thiserror_no_std::private::DisplayAsDisplay;
+            };
+
+            Some(t)
         } else {
             None
         };
@@ -173,17 +183,25 @@ fn impl_struct(input: Struct) -> TokenStream {
     }
     let error_where_clause = error_inferred_bounds.augment_where_clause(input.generics);
 
-    quote! {
+    #[cfg(feature = "std")]
+    let error_trait = quote! {
         #[allow(unused_qualifications)]
         impl #impl_generics #error_trait for #ty #ty_generics #error_where_clause {
             #source_method
             #backtrace_method
         }
+    };
+    #[cfg(not(feature = "std"))]
+    let error_trait = quote! {};
+
+    quote! {
+        #error_trait
         #display_impl
         #from_impl
     }
 }
 
+#[allow(unused)]
 fn impl_enum(input: Enum) -> TokenStream {
     let ty = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -226,7 +244,7 @@ fn impl_enum(input: Enum) -> TokenStream {
         });
         Some(quote! {
             fn source(&self) -> std::option::Option<&(dyn std::error::Error + 'static)> {
-                use thiserror::private::AsDynError;
+                use thiserror_no_std::private::AsDynError;
                 #[allow(deprecated)]
                 match self {
                     #(#arms)*
@@ -271,7 +289,7 @@ fn impl_enum(input: Enum) -> TokenStream {
                             #source: #varsource,
                             ..
                         } => {
-                            use thiserror::private::AsDynError;
+                            use thiserror_no_std::private::AsDynError;
                             #combinator
                         }
                     }
@@ -292,7 +310,7 @@ fn impl_enum(input: Enum) -> TokenStream {
                     };
                     quote! {
                         #ty::#ident {#backtrace: #varsource, ..} => {
-                            use thiserror::private::AsDynError;
+                            use thiserror_no_std::private::AsDynError;
                             #source_backtrace
                         }
                     }
@@ -333,10 +351,19 @@ fn impl_enum(input: Enum) -> TokenStream {
                 .as_ref()
                 .map_or(false, |display| display.has_bonus_display)
         }) {
-            Some(quote! {
+            #[cfg(feature = "std")]
+            let t = quote! {
                 #[allow(unused_imports)]
-                use thiserror::private::{DisplayAsDisplay, PathAsDisplay};
-            })
+                use thiserror_no_std::private::{DisplayAsDisplay, PathAsDisplay};
+            };
+
+            #[cfg(not(feature = "std"))]
+            let t = quote! {
+                #[allow(unused_imports)]
+                use thiserror_no_std::private::DisplayAsDisplay;
+            };
+
+            Some(t)
         } else {
             None
         };
@@ -416,12 +443,19 @@ fn impl_enum(input: Enum) -> TokenStream {
     }
     let error_where_clause = error_inferred_bounds.augment_where_clause(input.generics);
 
-    quote! {
+    #[cfg(feature = "std")]
+    let error_impl = quote! {
         #[allow(unused_qualifications)]
         impl #impl_generics #error_trait for #ty #ty_generics #error_where_clause {
             #source_method
             #backtrace_method
         }
+    };
+    #[cfg(not(feature = "std"))]
+    let error_impl = quote! {};
+
+    quote! {
+        #error_impl
         #display_impl
         #(#from_impls)*
     }

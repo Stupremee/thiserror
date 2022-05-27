@@ -1,5 +1,5 @@
 [package]
-name = "thiserror-impl"
+name = "thiserror-impl-no-std"
 version = "1.0.31"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 edition = "2018"
@@ -7,6 +7,9 @@ rust-version = "1.31"
 license = "MIT OR Apache-2.0"
 description = "Implementation detail of the `thiserror` crate"
 repository = "https://github.com/dtolnay/thiserror"
+
+[features]
+std = []
 
 [lib]
 proc-macro = true

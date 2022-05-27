@@ -1,5 +1,5 @@
 [package]
-name = "thiserror"
+name = "thiserror-no-std"
 version = "1.0.31"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 edition = "2018"
@@ -11,8 +11,11 @@ documentation = "https://docs.rs/thiserror"
 categories = ["rust-patterns"]
 readme = "README.md"
 
+[features]
+std = ["thiserror-impl-no-std/std"]
+
 [dependencies]
-thiserror-impl = { version = "=1.0.31", path = "impl" }
+thiserror-impl-no-std = { version = "=1.0.31", path = "impl" }
 
 [dev-dependencies]
 anyhow = "1.0"

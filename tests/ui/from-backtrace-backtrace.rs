@@ -3,7 +3,7 @@
 #![feature(backtrace)]
 
 use std::backtrace::Backtrace;
-use thiserror::Error;
+use thiserror_no_std::Error;
 
 #[derive(Error, Debug)]
 #[error("...")]

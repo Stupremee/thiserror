@@ -17,7 +17,7 @@
 //!
 //! ```rust
 //! # use std::io;
-//! use thiserror::Error;
+//! use thiserror_no_std::Error;
 //!
 //! #[derive(Error, Debug)]
 //! pub enum DataStoreError {
@@ -63,7 +63,7 @@
 //!
 //!   ```rust
 //!   # use std::i32;
-//!   # use thiserror::Error;
+//!   # use thiserror_no_std::Error;
 //!   #
 //!   #[derive(Error, Debug)]
 //!   pub enum Error {
@@ -77,7 +77,7 @@
 //!   as `.0`.
 //!
 //!   ```rust
-//!   # use thiserror::Error;
+//!   # use thiserror_no_std::Error;
 //!   #
 //!   # fn first_char(s: &String) -> char {
 //!   #     s.chars().next().unwrap()
@@ -130,7 +130,7 @@
 //!
 //!   ```rust
 //!   # use std::fmt::{self, Display};
-//!   # use thiserror::Error;
+//!   # use thiserror_no_std::Error;
 //!   #
 //!   #[derive(Error, Debug)]
 //!   pub struct MyError {
@@ -183,7 +183,7 @@
 //!   "anything else" variant.
 //!
 //!   ```
-//!   # use thiserror::Error;
+//!   # use thiserror_no_std::Error;
 //!   #
 //!   #[derive(Error, Debug)]
 //!   pub enum MyError {
@@ -207,15 +207,21 @@
     clippy::module_name_repetitions,
     clippy::return_self_not_must_use,
 )]
+#![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "std")]
 mod aserror;
 mod display;
 
-pub use thiserror_impl::*;
+pub use thiserror_impl_no_std::*;
 
 // Not public API.
 #[doc(hidden)]
 pub mod private {
+    #[cfg(feature = "std")]
     pub use crate::aserror::AsDynError;
-    pub use crate::display::{DisplayAsDisplay, PathAsDisplay};
+    #[cfg(feature = "std")]
+    pub use crate::display::PathAsDisplay;
+
+    pub use crate::display::DisplayAsDisplay;
 }

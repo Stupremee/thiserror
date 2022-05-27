@@ -1,6 +1,6 @@
 #![cfg_attr(thiserror_nightly_testing, feature(backtrace))]
 
-use thiserror::Error;
+use thiserror_no_std::Error;
 
 #[derive(Error, Debug)]
 #[error("...")]
@@ -19,7 +19,7 @@ pub mod structs {
     use std::backtrace::Backtrace;
     use std::error::Error;
     use std::sync::Arc;
-    use thiserror::Error;
+    use thiserror_no_std::Error;
 
     #[derive(Error, Debug)]
     #[error("...")]
@@ -127,7 +127,7 @@ pub mod enums {
     use std::backtrace::Backtrace;
     use std::error::Error;
     use std::sync::Arc;
-    use thiserror::Error;
+    use thiserror_no_std::Error;
 
     #[derive(Error, Debug)]
     pub enum PlainBacktrace {

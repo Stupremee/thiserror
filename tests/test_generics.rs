@@ -1,7 +1,7 @@
 #![allow(clippy::needless_late_init)]
 
 use std::fmt::{self, Debug, Display};
-use thiserror::Error;
+use thiserror_no_std::Error;
 
 pub struct NoFormat;
 
