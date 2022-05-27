@@ -1,3 +1,4 @@
+#[allow(unused_attributes)]
 #[rustversion::attr(not(nightly), ignore)]
 #[cfg_attr(any(miri, not(feature = "std")), ignore)]
 #[test]
